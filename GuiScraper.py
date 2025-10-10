@@ -66,6 +66,10 @@ class ScraperThread(QThread):
         parsed = urlparse(url)
         path = parsed.path.strip('/')
 
+        # Skip .git directories and files
+        if '.git' in path.split('/'):
+            return None
+
         if not path or path.endswith('/'):
             path = os.path.join(path, 'index.html')
         elif '.' not in os.path.basename(path):
@@ -82,6 +86,9 @@ class ScraperThread(QThread):
                 # Fix anchor links
                 for link in soup.find_all('a', href=True):
                     href = link['href']
+                    # Skip .git links
+                    if '.git' in href:
+                        continue
                     absolute_url = urljoin(url, href)
                     if self.is_valid_url(absolute_url):
                         link['href'] = self.get_relative_path(url, absolute_url)
@@ -89,6 +96,8 @@ class ScraperThread(QThread):
                 # Fix image sources
                 for img in soup.find_all('img', src=True):
                     src = img['src']
+                    if '.git' in src:
+                        continue
                     absolute_url = urljoin(url, src)
                     if self.is_valid_url(absolute_url):
                         img['src'] = self.get_relative_path(url, absolute_url)
@@ -96,6 +105,8 @@ class ScraperThread(QThread):
                 # Fix CSS links
                 for link in soup.find_all('link', href=True):
                     href = link['href']
+                    if '.git' in href:
+                        continue
                     absolute_url = urljoin(url, href)
                     if self.is_valid_url(absolute_url):
                         link['href'] = self.get_relative_path(url, absolute_url)
@@ -103,6 +114,8 @@ class ScraperThread(QThread):
                 # Fix script sources
                 for script in soup.find_all('script', src=True):
                     src = script['src']
+                    if '.git' in src:
+                        continue
                     absolute_url = urljoin(url, src)
                     if self.is_valid_url(absolute_url):
                         script['src'] = self.get_relative_path(url, absolute_url)
@@ -124,6 +137,10 @@ class ScraperThread(QThread):
             return
 
         if depth > self.options['max_depth']:
+            return
+
+        # Skip .git URLs
+        if '.git' in urlparse(url).path:
             return
 
         self.visited.add(url)
@@ -149,6 +166,10 @@ class ScraperThread(QThread):
                     return
 
                 href = link['href']
+                # Skip .git links
+                if '.git' in href:
+                    continue
+
                 absolute_url = urljoin(url, href)
 
                 if self.is_valid_url(absolute_url) and absolute_url not in self.visited:
@@ -159,7 +180,10 @@ class ScraperThread(QThread):
                 for img in soup.find_all('img', src=True):
                     if not self.is_running:
                         return
-                    img_url = urljoin(url, img['src'])
+                    src = img['src']
+                    if '.git' in src:
+                        continue
+                    img_url = urljoin(url, src)
                     if self.is_valid_url(img_url):
                         self.download_resource(img_url)
 
@@ -167,7 +191,10 @@ class ScraperThread(QThread):
                 for link in soup.find_all('link', href=True, rel='stylesheet'):
                     if not self.is_running:
                         return
-                    css_url = urljoin(url, link['href'])
+                    href = link['href']
+                    if '.git' in href:
+                        continue
+                    css_url = urljoin(url, href)
                     if self.is_valid_url(css_url):
                         self.download_resource(css_url)
 
@@ -175,7 +202,10 @@ class ScraperThread(QThread):
                 for script in soup.find_all('script', src=True):
                     if not self.is_running:
                         return
-                    js_url = urljoin(url, script['src'])
+                    src = script['src']
+                    if '.git' in src:
+                        continue
+                    js_url = urljoin(url, src)
                     if self.is_valid_url(js_url):
                         self.download_resource(js_url)
 
@@ -187,13 +217,20 @@ class ScraperThread(QThread):
     def download_resource(self, url):
         if url in self.visited:
             return
+
+        # Skip .git URLs
+        if '.git' in urlparse(url).path:
+            return
+
         self.visited.add(url)
 
         try:
             headers = {'User-Agent': 'Mozilla/5.0 (Website Scraper)'}
             response = requests.get(url, timeout=10, headers=headers)
             response.raise_for_status()
-            self.save_page(url, response.content, is_html=False)
+            file_path = self.save_page(url, response.content, is_html=False)
+            if file_path:  # Only log if file was actually saved
+                pass  # Silently save resources
         except Exception as e:
             self.progress.emit(f"✗ Resource error: {url} - {str(e)}")
 
@@ -301,7 +338,7 @@ class WebScraperGUI(QMainWindow):
 
         dir_layout = QHBoxLayout()
         dir_layout.addWidget(QLabel('Output Dir:'))
-        self.output_dir = QLineEdit('scraped_site_gui')
+        self.output_dir = QLineEdit('scraped_site')
         dir_layout.addWidget(self.output_dir)
         self.browse_btn = QPushButton('Browse')
         self.browse_btn.clicked.connect(self.browse_directory)
