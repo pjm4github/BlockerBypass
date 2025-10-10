@@ -36,7 +36,33 @@ class ScraperThread(QThread):
         base_parsed = urlparse(self.base_url)
         return parsed.netloc == base_parsed.netloc
 
-    def save_page(self, url, content):
+    def get_relative_path(self, from_url, to_url):
+        """Calculate relative path from one URL to another"""
+        from_parsed = urlparse(from_url)
+        to_parsed = urlparse(to_url)
+
+        # Convert URLs to file paths
+        from_path = from_parsed.path.strip('/')
+        to_path = to_parsed.path.strip('/')
+
+        # Normalize paths to include index.html
+        if not from_path or from_path.endswith('/'):
+            from_path = os.path.join(from_path, 'index.html')
+        elif '.' not in os.path.basename(from_path):
+            from_path = os.path.join(from_path, 'index.html')
+
+        if not to_path or to_path.endswith('/'):
+            to_path = os.path.join(to_path, 'index.html')
+        elif '.' not in os.path.basename(to_path):
+            to_path = os.path.join(to_path, 'index.html')
+
+        # Calculate relative path
+        from_dir = os.path.dirname(from_path)
+        rel_path = os.path.relpath(to_path, from_dir)
+
+        return rel_path.replace('\\', '/')  # Use forward slashes for web
+
+    def save_page(self, url, content, is_html=True):
         parsed = urlparse(url)
         path = parsed.path.strip('/')
 
@@ -47,6 +73,43 @@ class ScraperThread(QThread):
 
         file_path = Path(self.output_dir) / path
         file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Convert links to relative if HTML
+        if is_html:
+            try:
+                soup = BeautifulSoup(content, 'html.parser')
+
+                # Fix anchor links
+                for link in soup.find_all('a', href=True):
+                    href = link['href']
+                    absolute_url = urljoin(url, href)
+                    if self.is_valid_url(absolute_url):
+                        link['href'] = self.get_relative_path(url, absolute_url)
+
+                # Fix image sources
+                for img in soup.find_all('img', src=True):
+                    src = img['src']
+                    absolute_url = urljoin(url, src)
+                    if self.is_valid_url(absolute_url):
+                        img['src'] = self.get_relative_path(url, absolute_url)
+
+                # Fix CSS links
+                for link in soup.find_all('link', href=True):
+                    href = link['href']
+                    absolute_url = urljoin(url, href)
+                    if self.is_valid_url(absolute_url):
+                        link['href'] = self.get_relative_path(url, absolute_url)
+
+                # Fix script sources
+                for script in soup.find_all('script', src=True):
+                    src = script['src']
+                    absolute_url = urljoin(url, src)
+                    if self.is_valid_url(absolute_url):
+                        script['src'] = self.get_relative_path(url, absolute_url)
+
+                content = str(soup).encode('utf-8')
+            except Exception as e:
+                self.progress.emit(f"Warning: Could not fix links in {url}: {e}")
 
         with open(file_path, 'wb') as f:
             f.write(content)
@@ -71,7 +134,11 @@ class ScraperThread(QThread):
             response = requests.get(url, timeout=10, headers=headers)
             response.raise_for_status()
 
-            file_path = self.save_page(url, response.content)
+            # Check if content is HTML
+            content_type = response.headers.get('content-type', '').lower()
+            is_html = 'text/html' in content_type
+
+            file_path = self.save_page(url, response.content, is_html=is_html)
             self.progress.emit(f"✓ Saved: {file_path}")
 
             soup = BeautifulSoup(response.content, 'html.parser')
@@ -126,7 +193,7 @@ class ScraperThread(QThread):
             headers = {'User-Agent': 'Mozilla/5.0 (Website Scraper)'}
             response = requests.get(url, timeout=10, headers=headers)
             response.raise_for_status()
-            self.save_page(url, response.content)
+            self.save_page(url, response.content, is_html=False)
         except Exception as e:
             self.progress.emit(f"✗ Resource error: {url} - {str(e)}")
 
@@ -221,7 +288,7 @@ class WebScraperGUI(QMainWindow):
         url_input_layout = QHBoxLayout()
         url_input_layout.addWidget(QLabel('URL:'))
         self.url_input = QLineEdit()
-        self.url_input.setPlaceholderText('https://dpsim.fein-aachen.org/')
+        self.url_input.setText('https://dpsim.fein-aachen.org/')
         url_input_layout.addWidget(self.url_input)
         url_layout.addLayout(url_input_layout)
 
@@ -265,7 +332,7 @@ class WebScraperGUI(QMainWindow):
         self.max_depth = QSpinBox()
         self.max_depth.setMinimum(1)
         self.max_depth.setMaximum(10)
-        self.max_depth.setValue(3)
+        self.max_depth.setValue(10)
         depth_layout.addWidget(self.max_depth)
         depth_layout.addStretch()
         options_layout.addLayout(depth_layout)
@@ -290,7 +357,7 @@ class WebScraperGUI(QMainWindow):
         git_url_layout = QHBoxLayout()
         git_url_layout.addWidget(QLabel('Repo URL:'))
         self.git_url = QLineEdit()
-        self.git_url.setPlaceholderText('https://github.com/username/repo.git')
+        self.git_url.setText('https://github.com/pjm4github/dpsim.git')
         git_url_layout.addWidget(self.git_url)
         git_layout.addLayout(git_url_layout)
 
