@@ -479,7 +479,7 @@ class WebScraperGUI(QMainWindow):
         self.url_combo = QComboBox()
         self.url_combo.setEditable(True)
         self.url_combo.setInsertPolicy(QComboBox.NoInsert)
-        self.url_combo.lineEdit().setText('https://dpsim.fein-aachen.org/')
+        self.url_combo.lineEdit().setPlaceholderText('https://example.com')
 
         # Populate with history
         history_urls = self.get_history_urls()
@@ -536,8 +536,8 @@ class WebScraperGUI(QMainWindow):
         depth_layout.addWidget(QLabel('Max Depth:'))
         self.max_depth = QSpinBox()
         self.max_depth.setMinimum(1)
-        self.max_depth.setMaximum(20)
-        self.max_depth.setValue(15)
+        self.max_depth.setMaximum(10)
+        self.max_depth.setValue(3)
         depth_layout.addWidget(self.max_depth)
         depth_layout.addStretch()
         options_layout.addLayout(depth_layout)
@@ -562,7 +562,7 @@ class WebScraperGUI(QMainWindow):
         git_url_layout = QHBoxLayout()
         git_url_layout.addWidget(QLabel('Repo URL:'))
         self.git_url = QLineEdit()
-        self.git_url.setText('https://github.com/pjm4github/dpsim.git')
+        self.git_url.setPlaceholderText('https://github.com/username/repo.git')
         git_url_layout.addWidget(self.git_url)
         git_layout.addLayout(git_url_layout)
 
