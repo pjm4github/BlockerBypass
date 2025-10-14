@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>VILLAS</title>
+    <description>Virtually Interconnected Laboratories for LArge systems Simulation/emulation</description>
+    <link>https://villas.fein-aachen.org/website/</link>
+    <atom:link href="https://villas.fein-aachen.org/website/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Mon, 17 Feb 2020 15:50:02 +0100</pubDate>
+    <lastBuildDate>Mon, 17 Feb 2020 15:50:02 +0100</lastBuildDate>
+    <generator>Jekyll v4.0.0</generator>
+    
+      <item>
+        <title>The VILLAS development continues</title>
+        <description>The VILLAS development continues..
+
+The VILLAS project is officially ended. However main product of the project “VILLASframework” is still under ongoing development and used in new research projects.
+
+Up-to-date information about the software developments and ongoing research around VILLAS can be found at the FEIN e.V project web-site.
+
+A more in-depth description of the project can also be found at the JARA Energy Annual Report.
+
+This project is now archived. No further updates are to be expected.
+</description>
+        <pubDate>Mon, 17 Feb 2020 00:00:00 +0100</pubDate>
+        <link>https://villas.fein-aachen.org/website/2020/02/17/VILLAS-development-continues/</link>
+        <guid isPermaLink="true">https://villas.fein-aachen.org/website/2020/02/17/VILLAS-development-continues/</guid>
+        
+        <category>project</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>VILLASframework</title>
+        <description>VILLASframework
+
+
+
+VILLASframework has been released as open source software under the GPLv3 license.
+
+Details about the project can be found on its project page.
+</description>
+        <pubDate>Thu, 27 Apr 2017 00:00:00 +0200</pubDate>
+        <link>https://villas.fein-aachen.org/website/2017/04/27/VILLASframework/</link>
+        <guid isPermaLink="true">https://villas.fein-aachen.org/website/2017/04/27/VILLASframework/</guid>
+        
+        <category>software</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>New Domain</title>
+        <description>
+</description>
+        <pubDate>Thu, 27 Apr 2017 00:00:00 +0200</pubDate>
+        <link>https://villas.fein-aachen.org/website/2017/04/27/New-Domain/</link>
+        <guid isPermaLink="true">https://villas.fein-aachen.org/website/2017/04/27/New-Domain/</guid>
+        
+        <category>website</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>New Website</title>
+        <description>Website is online
+
+The first version of VILLAS project website is online.
+</description>
+        <pubDate>Sat, 01 Oct 2016 00:00:00 +0200</pubDate>
+        <link>https://villas.fein-aachen.org/website/2016/10/01/New-Website/</link>
+        <guid isPermaLink="true">https://villas.fein-aachen.org/website/2016/10/01/New-Website/</guid>
+        
+        <category>website</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>
